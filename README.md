@@ -5,3 +5,4 @@
 
 [Curved Distance on a Sphere](https://www.geeksforgeeks.org/dsa/haversine-formula-to-find-distance-between-two-points-on-a-sphere/)
 
+[Calculating radius of earth using latitude and longitude](https://planetcalc.com/7721/)
