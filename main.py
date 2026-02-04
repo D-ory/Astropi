@@ -6,17 +6,18 @@ from skyfield.api import load, EarthSatellite, Loader
 import numpy as np
 from picamzero import Camera
 
-RUN_TIME = 5
+RUN_TIME = 120
 camera = Camera()
-"""rows = []
+
+# Get a list of the most populous cities of the world
+rows = []
 with open("worldcities.csv") as file:
     csvreader = csv.reader(file)
-    
-    
     fields = next(csvreader)
     for row in csvreader:
+        # Add every city with a population above 50_000 to the list
         if row[9] and float(row[9]) > 50000: 
-            rows.append([row[1], float(row[2]), float(row[3])])"""
+            rows.append([row[1], float(row[2]), float(row[3])])
 
 iss = astro_pi_orbit.ISS()
 point = iss.coordinates()
@@ -26,11 +27,13 @@ prev_long = point.longitude.radians
 #rows.sort(key=lambda x:x[2])
 #rows.sort(key=lambda x:x[1])
 
+# Get the curved distance between two points on a sphere (the earth)
 def haversine(coord1, coord2, radius):
     a = (math.sin((coord2[0] - coord1[0]) / 2))**2 + math.cos(coord1[0]) * math.cos(coord2[0]) * (math.sin((coord2[1] - coord1[1]) / 2)**2)
     distance = 2 * radius * math.asin(math.sqrt(a))
     return distance
 
+# Get the radius at a specific latitude
 def get_radius(latitude):
     a = 6378.137
     b = 6356.7523412
@@ -38,7 +41,8 @@ def get_radius(latitude):
     radius = math.sqrt((((a**2)*math.cos(latitude))**2 + ((b**2)*(math.sin(latitude)))**2) / ((a*math.cos(latitude))**2 + (b * math.sin(latitude))**2))
     return radius
 
-"""def nearest_city(coord, radius):
+# Find the nearest city to the given coordinates
+def nearest_city(coord, radius):
     dist = 9999999999
     best_row = ""
     for row in rows:
@@ -46,39 +50,49 @@ def get_radius(latitude):
         if new_dist < dist:
             dist = new_dist
             best_row = row
-    return best_row[0]"""
+    return best_row[0]
 
 def main():
     global prev_height, prev_lat, prev_long
-    start_time = time.time()
-    f = open("result.txt", "w")
+    t = time.time()
+
+    output_file = open("result.txt", "w")
     total = 0
     count = 0
-    t = time.time()
+    
+    # Keep the loop running once every second until RUN_TIME ends
     while time.time() < start_time + RUN_TIME:
+        start_time = t
         time.sleep(1)
+        
+        # Take a photo every 60 seconds
         if count % 60 == 0:
-            camera.take_photo(f'image.jpg')
+            camera.take_photo(f'image{count // 60}.jpg')
 
         point = iss.coordinates()
         curr_height = point.elevation.km
         curr_lat = point.latitude.radians
         curr_long = point.longitude.radians
+        t = time.time()
 
+        # Calculate the mean radius of the earth between the two points
         radius = get_radius((prev_lat + curr_lat) / 2) + ((prev_height + curr_height) / 2)
-        speed = haversine((prev_lat, prev_long), (curr_lat, curr_long), radius)
-        print(speed / (time.time() - t))
-        total += speed / (time.time() - t)
+        
+        
+        speed = haversine((prev_lat, prev_long), (curr_lat, curr_long), radius) / (start_time - t)
+        print(speed)
+        total += speed
         count += 1
 
         prev_height = curr_height
         prev_lat = curr_lat
         prev_long = curr_long
-        t = time.time()
-        #print(nearest_city((curr_lat, curr_long), radius))
+        
+        
+        print(nearest_city((curr_lat, curr_long), radius))
     print(total / count)
-    f.write(f"{total/count:.4f}")
-    f.close()
+    output_file.write(f"{total/count:.4f}")
+    output_file.close()
 
 if __name__ == "__main__":
-   main() 
+   main()
