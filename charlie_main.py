@@ -12,15 +12,20 @@ RUN_TIME = 530
 INTERVAL = 1
 camera = Camera()
 
-# Get a list of the most populous cities of the world from a csv file
+# Get a list of the most populous cities of the world from a csv file from World Cities Database on simplemaps.com
 rows = []
-with open("worldcities.csv") as file:
-    csvreader = csv.reader(file)
-    fields = next(csvreader)
-    for row in csvreader:
-        # Add every city with a population above 50_000 to the list
-        if row[9] and float(row[9]) > 50000: 
-            rows.append([row[1], float(row[2]), float(row[3])])
+get_nearest_city = True
+try:
+    with open("worldcities.csv") as file:
+        csvreader = csv.reader(file)
+        fields = next(csvreader)
+        for row in csvreader:
+            # Add every city with a population above 50_000 to the list
+            if row[9] and float(row[9]) > 50000: 
+                rows.append([row[1], float(row[2]), float(row[3])])
+except:
+    print("Failed to open worldcities.csv file!")
+    get_nearest_city = False
 
 # Initialise the module to get ISS coordinates
 iss = astro_pi_orbit.ISS()
@@ -45,6 +50,8 @@ def get_radius(latitude):
 
 # Find the nearest city to the given coordinates
 def nearest_city(coord, radius):
+    if get_nearest_city == False:
+        return "feature_disabled"
     dist = None
     best_row = ""
     for row in rows:
@@ -59,11 +66,21 @@ def main():
     start_time = time.time()
     process_end_time = start_time
 
-    # Output file contains our final speed estimate
-    output_file = open("result.txt", "w")
+    output_file = None
+    try:
+        # Output file contains our final speed estimate
+        output_file = open("result.txt", "w")
+    except:
+        print("Output file could not be created! Aborting")
+        return
 
     # Data file is a csv file containing all data we collected for later analysis
-    data_file = open("data.csv", "w")
+    data_file = None
+    try:
+        data_file = open("data.csv", "w")
+        data_file.write('"time","latitude","longitude","radius","speed","nearest_city"')
+    except:
+        print("Data file could not be created or written to!")
 
     # This is the sum of all the calculated speeds so we can calculate a mean at the end
     total = 0
@@ -78,8 +95,11 @@ def main():
         time.sleep(INTERVAL)
 
         # Take a photo every 60 seconds
-        if count % 60 == 0:
-            camera.take_photo(f'image{count // 60}.jpg')
+        try:
+            if count % 60 == 0:
+                camera.take_photo(f'image{count // 60}.jpg')
+        except:
+            print("Could not take photo!")
 
         point = iss.coordinates()
         curr_height = point.elevation.km
@@ -110,12 +130,17 @@ def main():
         prev_long = curr_long
 
         # save data to a file in format time,lat,long,radius,speed,nearest_city
-        csv_string = f"{(process_start_time - start_time):.1f},{math.degrees(prev_lat)},{math.degrees(prev_long)},{radius},{speed},{city}\n"
-        data_file.write(csv_string)
+        csv_string = f'{(process_start_time - start_time):.1f},{math.degrees(prev_lat)},{math.degrees(prev_long)},{radius},{speed},"{city}"\n'
+        if data_file != None:
+            try:
+                data_file.write(csv_string)
+            except:
+                print("Data file is not writable!")
 
     output_file.write(f"{total/count:.4f}")
     output_file.close()
-    data_file.close()
+    if data_file != None:
+        data_file.close()
 
     print(f"Final Speed Estimate: {total / count: .4f}km/s")
 
