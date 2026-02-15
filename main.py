@@ -26,24 +26,23 @@ prev_lat = point.latitude.radians
 prev_long = point.longitude.radians
 t2 = time.time()
 
-# Get the curved distance between two points on a sphere (the earth)
+# Gets the curved distance between two points on a sphere (the Earth)
 def haversine(coord1, coord2, radius):
     a = (math.sin((coord2[0] - coord1[0]) / 2))**2 + math.cos(coord1[0]) * math.cos(coord2[0]) * (math.sin((coord2[1] - coord1[1]) / 2)**2)
     distance = 2 * radius * math.asin(math.sqrt(a))
     return distance
 
-# Get the radius at a specific latitude
+# Gets the radius at a specific latitude
 def get_radius(latitude):
     a = 6378.137
     b = 6356.7523412
-    deglat = math.degrees(latitude)
     radius = math.sqrt((((a**2)*math.cos(latitude))**2 + ((b**2)*(math.sin(latitude)))**2) / ((a*math.cos(latitude))**2 + (b * math.sin(latitude))**2))
     return radius
 
-# Find the nearest city to the given coordinates
+# Finds the nearest city to the given coordinates
 def nearest_city(coord, radius):
     dist = 9999999999
-    best_row = ""
+    best_row = []
     for row in rows:
         new_dist = haversine(coord, (math.radians(row[1]), math.radians(row[2])), radius)
         if new_dist < dist:
@@ -55,7 +54,6 @@ def main():
     global prev_height, prev_lat, prev_long
     start_time = time.time()
 
-    output_file = open("result.txt", "w")
     total = 0
     count = 0
     
@@ -64,9 +62,10 @@ def main():
         t1 = t2
         time.sleep(1)
         
-        # Take a photo every 60 seconds
+        # Takes a photo and prints the closest city to the ISS every 60 seconds
         if count % 60 == 0:
             camera.take_photo(f'image{count // 60}.jpg')
+            print(nearest_city((curr_lat, curr_long), radius))
 
         point = iss.coordinates()
         curr_height = point.elevation.km
@@ -74,9 +73,8 @@ def main():
         curr_long = point.longitude.radians
         t2 = time.time()
 
-        # Calculate the mean radius of the earth between the two points
+        # Calculates the mean radius of the earth between the two points
         radius = get_radius((prev_lat + curr_lat) / 2) + ((prev_height + curr_height) / 2)
-        
         
         speed = haversine((prev_lat, prev_long), (curr_lat, curr_long), radius) / (t2 - t1)
         print(speed)
@@ -87,11 +85,8 @@ def main():
         prev_lat = curr_lat
         prev_long = curr_long
         
-        
-        print(nearest_city((curr_lat, curr_long), radius))
-    print(total / count)
-    output_file.write(f"{total/count:.4f}")
-    output_file.close()
+    with open("result.txt", "w") as output_file:
+        output_file.write(f"{total/count:.4f}")
 
 if __name__ == "__main__":
    main()
