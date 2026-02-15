@@ -7,7 +7,7 @@ import numpy as np
 from picamzero import Camera
 
 # How long the program will run for in seconds
-RUN_TIME = 530
+RUN_TIME = 545
 # The time between measurements / speed calculations
 INTERVAL = 1
 camera = Camera()
@@ -33,6 +33,9 @@ point = iss.coordinates()
 prev_height = point.elevation.km
 prev_lat = point.latitude.radians
 prev_long = point.longitude.radians
+
+# Gets the time after 1st reading
+process_end_time = time.time()
 
 # Get the curved distance between two points on a sphere (the earth) using the Haversine formula
 def haversine(coord1, coord2, radius):
@@ -64,7 +67,6 @@ def nearest_city(coord, radius):
 def main():
     global prev_height, prev_lat, prev_long
     start_time = time.time()
-    process_end_time = start_time
 
     output_file = None
     try:
