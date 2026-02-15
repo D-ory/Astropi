@@ -24,6 +24,7 @@ point = iss.coordinates()
 prev_height = point.elevation.km
 prev_lat = point.latitude.radians
 prev_long = point.longitude.radians
+t2 = time.time()
 
 # Get the curved distance between two points on a sphere (the earth)
 def haversine(coord1, coord2, radius):
@@ -53,7 +54,6 @@ def nearest_city(coord, radius):
 def main():
     global prev_height, prev_lat, prev_long
     start_time = time.time()
-    t2 = start_time
 
     output_file = open("result.txt", "w")
     total = 0
