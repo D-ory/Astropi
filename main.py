@@ -84,7 +84,8 @@ def main():
         prev_height = curr_height
         prev_lat = curr_lat
         prev_long = curr_long
-        
+
+    # Writes the average speed to the file
     with open("result.txt", "w") as output_file:
         output_file.write(f"{total/count:.4f}")
 
