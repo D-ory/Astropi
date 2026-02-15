@@ -34,6 +34,8 @@ prev_height = point.elevation.km
 prev_lat = point.latitude.radians
 prev_long = point.longitude.radians
 
+process_end_time = time.time()
+
 # Get the curved distance between two points on a sphere (the earth) using the Haversine formula
 def haversine(coord1, coord2, radius):
     a = (math.sin((coord2[0] - coord1[0]) / 2))**2 + math.cos(coord1[0]) * math.cos(coord2[0]) * (math.sin((coord2[1] - coord1[1]) / 2)**2)
@@ -64,8 +66,7 @@ def nearest_city(coord, radius):
 def main():
     global prev_height, prev_lat, prev_long
     start_time = time.time()
-    process_end_time = start_time
-
+    
     output_file = None
     try:
         # Output file contains our final speed estimate
