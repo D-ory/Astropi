@@ -6,7 +6,7 @@ from skyfield.api import load, EarthSatellite, Loader
 import numpy as np
 from picamzero import Camera
 
-RUN_TIME = 120
+RUN_TIME = 600
 camera = Camera()
 
 # Get a list of the most populous cities of the world
@@ -24,8 +24,6 @@ point = iss.coordinates()
 prev_height = point.elevation.km
 prev_lat = point.latitude.radians
 prev_long = point.longitude.radians
-#rows.sort(key=lambda x:x[2])
-#rows.sort(key=lambda x:x[1])
 
 # Get the curved distance between two points on a sphere (the earth)
 def haversine(coord1, coord2, radius):
@@ -54,7 +52,8 @@ def nearest_city(coord, radius):
 
 def main():
     global prev_height, prev_lat, prev_long
-    t = time.time()
+    start_time = time.time()
+    t2 = start_time
 
     output_file = open("result.txt", "w")
     total = 0
@@ -62,7 +61,7 @@ def main():
     
     # Keep the loop running once every second until RUN_TIME ends
     while time.time() < start_time + RUN_TIME:
-        start_time = t
+        t1 = t2
         time.sleep(1)
         
         # Take a photo every 60 seconds
@@ -73,13 +72,13 @@ def main():
         curr_height = point.elevation.km
         curr_lat = point.latitude.radians
         curr_long = point.longitude.radians
-        t = time.time()
+        t2 = time.time()
 
         # Calculate the mean radius of the earth between the two points
         radius = get_radius((prev_lat + curr_lat) / 2) + ((prev_height + curr_height) / 2)
         
         
-        speed = haversine((prev_lat, prev_long), (curr_lat, curr_long), radius) / (start_time - t)
+        speed = haversine((prev_lat, prev_long), (curr_lat, curr_long), radius) / (t2 - t1)
         print(speed)
         total += speed
         count += 1
