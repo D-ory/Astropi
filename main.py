@@ -56,6 +56,9 @@ def main():
 
     total = 0
     count = 0
+
+    speed_file = open("speed.txt", "w")
+    nearest_city_file = open("nearest_city.txt", "w")
     
     # Keep the loop running once every second until RUN_TIME ends
     while time.time() < start_time + RUN_TIME:
@@ -65,7 +68,7 @@ def main():
         # Takes a photo and prints the closest city to the ISS every 60 seconds
         if count % 60 == 0:
             camera.take_photo(f'image{count // 60}.jpg')
-            print(nearest_city((curr_lat, curr_long), radius))
+            nearest_city_file.write(str(nearest_city((curr_lat, curr_long), radius)))
 
         point = iss.coordinates()
         curr_height = point.elevation.km
@@ -77,7 +80,7 @@ def main():
         radius = get_radius((prev_lat + curr_lat) / 2) + ((prev_height + curr_height) / 2)
         
         speed = haversine((prev_lat, prev_long), (curr_lat, curr_long), radius) / (t2 - t1)
-        print(speed)
+        speed_file.write(str(speed))
         total += speed
         count += 1
 
@@ -86,8 +89,12 @@ def main():
         prev_long = curr_long
 
     # Writes the average speed to the file
+    avg = total / count
     with open("result.txt", "w") as output_file:
-        output_file.write(f"{total/count:.4f}")
+        output_file.write(f"{avg:.4f}")
+
+    speed_file.close()
+    nearest_city_file.close()
 
 if __name__ == "__main__":
    main()
