@@ -12,7 +12,7 @@ RUN_TIME = 530
 INTERVAL = 1
 camera = Camera()
 
-# Get a list of the most populous cities of the world from a csv file from World Cities Database on simplemaps.com
+# Get a list of the most populous cities of the world from a csv file from World Cities Database on simplemaps.com (creative commons licence)
 rows = []
 get_nearest_city = True
 try:
@@ -33,8 +33,6 @@ point = iss.coordinates()
 prev_height = point.elevation.km
 prev_lat = point.latitude.radians
 prev_long = point.longitude.radians
-
-process_end_time = time.time()
 
 # Get the curved distance between two points on a sphere (the earth) using the Haversine formula
 def haversine(coord1, coord2, radius):
@@ -66,7 +64,8 @@ def nearest_city(coord, radius):
 def main():
     global prev_height, prev_lat, prev_long
     start_time = time.time()
-    
+    process_end_time = start_time
+
     output_file = None
     try:
         # Output file contains our final speed estimate
@@ -79,7 +78,7 @@ def main():
     data_file = None
     try:
         data_file = open("data.csv", "w")
-        data_file.write('"time","latitude","longitude","radius","speed","nearest_city"')
+        data_file.write('"time","latitude","longitude","radius","speed","nearest_city"\n')
     except:
         print("Data file could not be created or written to!")
 
